@@ -1,7 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
-
-
-#include "MapGenerator.h"
+﻿#include "MapGenerator.h"
 
 void AMapGenerator::BeginPlay()
 {

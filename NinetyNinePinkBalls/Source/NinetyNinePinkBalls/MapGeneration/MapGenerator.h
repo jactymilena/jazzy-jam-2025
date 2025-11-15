@@ -1,7 +1,4 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
-
-#pragma once
-
+﻿#pragma once
 
 // UE
 #include "CoreMinimal.h"
@@ -10,9 +7,6 @@
 // Generated
 #include "MapGenerator.generated.h"
 
-/**
- * 
- */
 enum class EWallOrientation
 {
 	Vertical = 0,
@@ -26,11 +20,15 @@ struct FWallPosition
 	EWallOrientation Orientation {};
 };
 
-UCLASS()
+/**
+ * Handles the spawning of floor tiles and walls
+ */
+UCLASS(Abstract, Blueprintable)
 class NINETYNINEPINKBALLS_API AMapGenerator : public AActor
 {
 	GENERATED_BODY()
 	
+protected:
 	virtual void BeginPlay() override;
 	
 private:
