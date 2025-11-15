@@ -357,7 +357,7 @@ bool AMapGenerator::IsMapReady() const
 
 FVector AMapGenerator::GetPlayerStartPosition() const
 {
-	return _playerStartPosition + FVector::UpVector * 150.f;
+	return _playerStartPosition + FVector::UpVector * 200.f;
 }
 
 void AMapGenerator::BeginPlay()
@@ -401,6 +401,7 @@ void AMapGenerator::SpawnMapElement(USceneComponent* ComponentToSpawn, const FVe
 {
 	ComponentToSpawn->SetRelativeLocation(Position);
 	ComponentToSpawn->SetRelativeRotation(Rotation);
+  ComponentToSpawn->SetRelativeScale3D(FVector(Scale, Scale, 1.f));
 			
 	ComponentToSpawn->RegisterComponent();
 	_spawnedMapElements.Add(ComponentToSpawn);
@@ -419,7 +420,7 @@ void AMapGenerator::SpawnFloor()
 		{
 			UStaticMeshComponent* spawnedFloorTile = NewObject<UStaticMeshComponent>(this);
 			spawnedFloorTile->SetStaticMesh(FloorMeshes[0]);
-			const auto position = FVector(TileSize * i, TileSize * j, 0.f) + MAP_OFFSET;
+			const auto position = FVector(TileSize * i, TileSize * j, 0.f) + MAP_OFFSET * Scale;
 			SpawnMapElement(spawnedFloorTile, position);
 		}
 	}
