@@ -48,6 +48,7 @@ Content/_ExternalObjects_/Developers/
 *.VC.db
 *.VC.opendb
 *.log
+*.sln.*
 
 # Precompiled Assets
 SourceArt/**/*.png
