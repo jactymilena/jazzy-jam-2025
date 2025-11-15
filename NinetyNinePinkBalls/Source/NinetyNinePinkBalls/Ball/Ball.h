@@ -27,7 +27,12 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Ball", meta = (AllowPrivateAccess = "true"))
 	UStaticMeshComponent* SphereMesh;
 	
+	UPROPERTY()
+	UMaterialInstanceDynamic* DynamicMaterial;
+	
 	virtual void BeginPlay() override;
+	
+	void SetRandomColor();
 	
 	UFUNCTION()
 	void OnBallHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);

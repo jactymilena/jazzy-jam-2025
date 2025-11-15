@@ -80,7 +80,7 @@ FHitResult UGrabberComponent::GetFirstPhysicsBodyInReach() const
 	GetWorld()->LineTraceSingleByObjectType(Hit, PlayerViewLocation, LineTraceEnd, ObjectQueryParams, TraceParams);
 
 	// Debug
-	DrawDebugLine(GetWorld(), PlayerViewLocation, LineTraceEnd, FColor::Green, false, 20.0f);
+	// DrawDebugLine(GetWorld(), PlayerViewLocation, LineTraceEnd, FColor::Green, false, 20.0f);
 
 	return Hit;
 }
