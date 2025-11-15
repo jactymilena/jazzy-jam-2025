@@ -3,6 +3,8 @@
 
 #include "MarcoPoloComponent.h"
 
+#include <rapidjson/internal/meta.h>
+
 // Sets default values for this component's properties
 UMarcoPoloComponent::UMarcoPoloComponent()
 {
@@ -28,7 +30,15 @@ void UMarcoPoloComponent::BeginPlay()
 void UMarcoPoloComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
+	
 	// ...
 }
+
+void UMarcoPoloComponent::CallMarco()
+{
+	if (GEngine)
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, "CallMarco");
+}
+
+
 
