@@ -31,6 +31,14 @@ void ABall::BeginPlay()
 	Super::BeginPlay();
 
 	SphereCollision->OnComponentHit.AddDynamic(this, &ABall::OnBallHit);
+	
+	SetRandomColor();
+}
+
+void ABall::SetRandomColor()
+{
+	DynamicMaterial = SphereMesh->CreateAndSetMaterialInstanceDynamic(0);
+	DynamicMaterial->SetScalarParameterValue("0 - 1 Value", FMath::FRand());
 }
 
 void ABall::OnBallHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
@@ -39,7 +47,7 @@ void ABall::OnBallHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimiti
 	
 	// Only react if the thing hitting the ball is the player character
 	ACharacter* Character = Cast<ACharacter>(OtherActor);
-	if (!Character) return; // ignore everything else
+	if (!Character) return;
 	
 	// Get the base direction AWAY from impact surface
 	FVector BaseDir = Hit.ImpactNormal;
