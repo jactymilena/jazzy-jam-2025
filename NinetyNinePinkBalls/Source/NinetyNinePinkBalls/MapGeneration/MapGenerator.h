@@ -55,7 +55,6 @@ private:
 	void SpawnMapElement(USceneComponent* ComponentToSpawn, const FVector& Position, const FRotator& Rotation = {});
 
 	void PlaceObstacle();
-	void PlacePlayer();
 	
 	void SpawnFloor();
 	void SpawnWalls();

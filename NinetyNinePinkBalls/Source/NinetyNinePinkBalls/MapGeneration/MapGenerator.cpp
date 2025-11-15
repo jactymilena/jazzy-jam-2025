@@ -14,6 +14,7 @@
 
 using vector_t = FVector;
 
+
 struct point_t {
   int x, y;
 
@@ -133,6 +134,24 @@ private:
 public:
   [[nodiscard]] vector_t centroid() const { return start; }
 
+  vector_t retrieve_safe_point() {
+    std::uniform_int_distribution<int> dist_x(0, width - 1);
+    std::uniform_int_distribution<int> dist_y(0, height - 1);
+
+    int rx = dist_x(rng);
+    int ry = dist_y(rng);
+
+    std::uniform_int_distribution<int> offset(
+      -segment_length * 0.75 / 2, segment_length * 0.75 / 2);
+
+
+    return vector_t{
+      rx * segment_length + segment_length / 2.0 + offset(rng),
+      ry * segment_length + segment_length / 2.0 + offset(rng),
+      0.0
+    };
+  }
+
   std::vector<std::shared_ptr<collider_t>>& get_walls() { return walls; }
 
   map_t(const map_config_t& config)
@@ -207,8 +226,8 @@ private:
         remove_wall(point_t{px, py}, next, dir);
 
         for (int i = 0; i < direction.size(); ++i) {
-          const auto& dir2 = direction[i];
-          queue.push_back({nx + dir2.x, ny + dir2.y, i, nx, ny});
+          const auto& dirc = direction[i];
+          queue.push_back({nx + dirc.x, ny + dirc.y, i, nx, ny});
         }
       }
     }
@@ -325,6 +344,12 @@ private:
   }
 };
 
+namespace
+{
+   const FVector MAP_OFFSET = {200.f, 200.f, 0.f};
+
+}
+
 bool AMapGenerator::IsMapReady() const
 {
 	return _isMapReady;
@@ -332,13 +357,13 @@ bool AMapGenerator::IsMapReady() const
 
 FVector AMapGenerator::GetPlayerStartPosition() const
 {
-	return FVector(MapWidth * TileSize / 2.f, MapHeight * TileSize / 2.f, 200.f);
+	return _playerStartPosition + FVector::UpVector * 150.f;
 }
 
 void AMapGenerator::BeginPlay()
 {
-	Super::BeginPlay();
-	GenerateMap();
+  Super::BeginPlay();
+  GenerateMap();
 }
 
 std::vector<std::shared_ptr<collider_t>> AMapGenerator::CalculateWallPositions()
@@ -351,6 +376,7 @@ std::vector<std::shared_ptr<collider_t>> AMapGenerator::CalculateWallPositions()
 	
 	map_t map {config};
 	auto walls = map.get_walls();
+  _playerStartPosition = map.retrieve_safe_point();
 	
 	return walls;
 }
@@ -367,7 +393,6 @@ void AMapGenerator::GenerateMap()
 	SpawnWalls();
 	PlaceObstacle();
   SpawnBalls();
-	PlacePlayer();
 	
 	SetMapReady();
 }
@@ -383,24 +408,18 @@ void AMapGenerator::SpawnMapElement(USceneComponent* ComponentToSpawn, const FVe
 
 void AMapGenerator::PlaceObstacle()
 {
-}
-
-void AMapGenerator::PlacePlayer()
-{
-	FVector mapCenter = FVector(MapWidth * TileSize, MapHeight * TileSize, 10.f);
-	_playerStartPosition = mapCenter;
+    // TODO: Implement
 }
 
 void AMapGenerator::SpawnFloor()
 {
-	FVector startPosition = FVector(250.f, 250.f, 0.f);
 	for (int i = 0; i< MapWidth; i++)
 	{
 		for (int j = 0; j< MapHeight; j++)
 		{
 			UStaticMeshComponent* spawnedFloorTile = NewObject<UStaticMeshComponent>(this);
 			spawnedFloorTile->SetStaticMesh(FloorMeshes[0]);
-			const auto position = FVector(TileSize * i, TileSize * j, 0.f) + startPosition;
+			const auto position = FVector(TileSize * i, TileSize * j, 0.f) + MAP_OFFSET;
 			SpawnMapElement(spawnedFloorTile, position);
 		}
 	}
