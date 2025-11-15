@@ -51,6 +51,15 @@ struct cell_t {
       default: return false;
     }
   }
+
+  [[nodiscard]] bool has_single_wall() const {
+    int count = 0;
+    if (n) count++;
+    if (s) count++;
+    if (e) count++;
+    if (w) count++;
+    return count == 1;
+  }
 };
 
 enum class wall_orientation { H, V };
@@ -82,12 +91,43 @@ struct collider_t {
   }
 };
 
+using wall_data = std::tuple<double, double, wall_orientation>;
+
+namespace std {
+  template<>
+  struct hash<wall_data> {
+    size_t operator()(const wall_data& key) const {
+      size_t h1 = std::hash<double>()(std::get<0>(key));
+      size_t h2 = std::hash<double>()(std::get<1>(key));
+      size_t h3 = std::hash<int>()(static_cast<int>(std::get<2>(key)));
+      return h1 ^ (h2 << 1) ^ (h3 << 2);
+    }
+  };
+
+  template<>
+  struct equal_to<wall_data> {
+    bool operator()(const wall_data& lhs, const wall_data& rhs) const {
+      return std::get<0>(lhs) == std::get<0>(rhs) &&
+             std::get<1>(lhs) == std::get<1>(rhs) &&
+             std::get<2>(lhs) == std::get<2>(rhs);
+    }
+  };
+}
+
+struct map_config_t {
+  int width;
+  int height;
+  int segment_length;
+  int threshold;
+};
+
 
 class map_t {
 private:
   int segment_length;
   int width;
   int height;
+  int threshold = 30;
   std::vector<std::vector<cell_t>> grid;
   vector_t start;
   std::vector<std::unique_ptr<collider_t>> walls;
@@ -99,13 +139,14 @@ public:
 
   std::vector<std::unique_ptr<collider_t>>& get_walls() { return walls; }
 
-  map_t(int w, int h, int sl)
-      : width(w), height(h), grid(h, std::vector<cell_t>(w)), segment_length(sl) {
-    auto dist_w = std::uniform_int_distribution<int>(0, w - 1);
-    start.X = dist_w(rng) * segment_length + segment_length / 2.0;
-    auto dist_h = std::uniform_int_distribution<int>(0, h - 1);
-    start.Y = dist_h(rng) * segment_length + segment_length / 2.0;
-    prim(point_t{0, 0});
+  map_t(const map_config_t& config)
+      : width(config.width), height(config.height), grid(config.height, std::vector<cell_t>(config.height)), 
+        segment_length(config.segment_length), threshold(config.threshold) {
+    prim(
+      {std::uniform_int_distribution<int>(0, width - 1)(rng),
+      std::uniform_int_distribution<int>(0, height - 1)(rng)}
+    );
+    random_remove_wall();
     generate_colliders();
   }
 
@@ -177,6 +218,47 @@ private:
     }
   }
 
+  void random_remove_wall() {
+    std::vector<std::vector<int>> density;
+
+    for (size_t si = 0; si < grid.size() - 4; ++si) {
+      for (size_t sj = 0; sj < grid[si].size() - 4; ++sj) {
+        int wall_count = 0;
+        for (size_t i = si; i < si + 4; ++i) {
+          for (size_t j = sj; j < sj + 4; ++j) {
+            wall_count += grid[i][j].n + grid[i][j].s + grid[i][j].e + grid[i][j].w;
+          }
+        }
+        density.push_back({static_cast<int>(si), static_cast<int>(sj), wall_count});
+      }
+    }
+
+    for (const auto& d : density) {
+      if (d[2] > threshold) {
+        std::uniform_int_distribution<int> dist_i(d[0], d[0] + 3);
+        std::uniform_int_distribution<int> dist_j(d[1], d[1] + 3);
+        int ri = dist_i(rng);
+        int rj = dist_j(rng);
+
+        std::vector<int> possible_walls;
+        if (grid[ri][rj].n) possible_walls.push_back(0);
+        if (grid[ri][rj].s) possible_walls.push_back(1);
+        if (grid[ri][rj].e) possible_walls.push_back(2);
+        if (grid[ri][rj].w) possible_walls.push_back(3);
+
+        if (!possible_walls.empty()) {
+          std::uniform_int_distribution<int> dist_wall(0, possible_walls.size() - 1);
+          int wall_dir = possible_walls[dist_wall(rng)];
+
+          point_t p1{ri, rj};
+          point_t p2{ri + direction[wall_dir].x, rj + direction[wall_dir].y};
+          
+          if (p2.x >= 0 && p2.x < width && p2.y >= 0 && p2.y < height)
+            remove_wall(p1, p2, wall_dir);
+        }
+      }
+    }
+  }
 
   void remove_wall(point_t p1, point_t p2, int dir) {
     if (dir == 0) {
@@ -195,48 +277,60 @@ private:
   }
 
   void generate_colliders() {
+    std::unordered_set<wall_data> unique_walls;
     walls.clear();
+
+    auto is_border = [this](size_t i, size_t j) {
+      return i == 0 || j == 0 || i == height - 1 || j == width - 1;
+    };
 
     for (size_t i = 0; i < grid.size(); ++i) {
       for (size_t j = 0; j < grid[i].size(); ++j) {
         const auto& cell = grid[i][j];
+        if (cell.has_single_wall() && !is_border(i, j))
+          continue;
+
         double iw = i * segment_length;
         double jw = j * segment_length;
-        double half = segment_length / 2.0;
 
-
-        if (cell.n) {
-          walls.push_back(std::make_unique<collider_t>(
-            vector_t{jw + half, iw, 0.0},
-            wall_orientation::H,
-            static_cast<double>(segment_length)));
+        if (cell.n || i == 0) {
+          unique_walls.insert({
+            jw + segment_length / 2.0, iw, 
+            wall_orientation::H});
         }
-        if (cell.s) {
-          walls.push_back(std::make_unique<collider_t>(
-            vector_t{jw + half, iw + segment_length, 0.0},
-            wall_orientation::H,
-            static_cast<double>(segment_length)));
+        if (cell.s || i == height - 1) {
+          unique_walls.insert({
+            jw + segment_length / 2.0, iw + segment_length, 
+            wall_orientation::H});
         }
-        if (cell.e) {
-          walls.push_back(std::make_unique<collider_t>(
-            vector_t{jw + segment_length, iw + half, 0.0},
-            wall_orientation::V,
-            static_cast<double>(segment_length)));
+        if (cell.e || j == width - 1) {
+          unique_walls.insert({
+            jw + segment_length, iw + segment_length / 2.0, 
+            wall_orientation::V});
         }
-        if (cell.w) {
-          walls.push_back(std::make_unique<collider_t>(
-            vector_t{jw, iw + half, 0.0},
-            wall_orientation::V,
-            static_cast<double>(segment_length)));
+        if (cell.w || j == 0) {
+          unique_walls.insert({
+            jw, iw + segment_length / 2.0, 
+            wall_orientation::V});
         }
       }
+    }
+
+    for (const auto& wall : unique_walls) {
+      double x = std::get<0>(wall);
+      double y = std::get<1>(wall);
+      wall_orientation o = std::get<2>(wall);
+
+      walls.push_back(std::make_unique<collider_t>(
+        vector_t{x, y, 0.0},
+        o,
+        static_cast<double>(segment_length)));
     }
   }
 };
 
-
 int main() {
-  map_t m{20, 20, 10};
+  map_t m{{10, 10, 10, 30}};
   std::ofstream ofs("maze.tex");
   ofs << m.latex();
 
