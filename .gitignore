@@ -108,3 +108,4 @@ DerivedDataCache/*
 .vscode/
 bin/
 obj/
+.idea/
