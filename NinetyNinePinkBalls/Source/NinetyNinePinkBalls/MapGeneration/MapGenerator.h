@@ -37,12 +37,20 @@ class NINETYNINEPINKBALLS_API  AMapGenerator : public AActor
 {
 	GENERATED_BODY()
 	
+public:
+	DECLARE_EVENT(AMapGenerator, MapReadyEvent);
+	MapReadyEvent OnMapReady;
+	bool IsMapReady() const;
+	
+	FVector GetPlayerStartPosition() const;
+	
 protected:
 	virtual void BeginPlay() override;
 	
 private:
 	std::vector<std::shared_ptr<collider_t>>  CalculateWallPositions();
 
+	void SetMapReady();
 	void GenerateMap();
 	void SpawnMapElement(USceneComponent* ComponentToSpawn, const FVector& Position, const FRotator& Rotation = {});
 
@@ -53,7 +61,7 @@ private:
 	void SpawnWalls();
 	
 	UPROPERTY(EditDefaultsOnly)
-	TArray<TWeakObjectPtr<USceneComponent>> SpawnedMapElements;
+	TArray<TWeakObjectPtr<USceneComponent>> _spawnedMapElements;
 	
 	UPROPERTY(EditDefaultsOnly, Category="Map Elements")	
 	TArray<UStaticMesh*> WallMeshes;
@@ -69,4 +77,7 @@ private:
 	
 	UPROPERTY(EditDefaultsOnly, Category="Tile Settings")
 	float TileSize = 500.f;
+	
+	bool _isMapReady = false;
+	FVector _playerStartPosition = FVector::Zero();
 };

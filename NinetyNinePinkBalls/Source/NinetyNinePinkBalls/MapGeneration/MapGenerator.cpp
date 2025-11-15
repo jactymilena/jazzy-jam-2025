@@ -1,7 +1,16 @@
 ﻿#include "MapGenerator.h"
 #include "maze.cpp"
 
-#include "GameFramework/PlayerStart.h"
+
+bool AMapGenerator::IsMapReady() const
+{
+	return _isMapReady;
+}
+
+FVector AMapGenerator::GetPlayerStartPosition() const
+{
+	return FVector(MapWidth * TileSize / 2.f, MapHeight * TileSize / 2.f, 200.f);
+}
 
 void AMapGenerator::BeginPlay()
 {
@@ -17,12 +26,21 @@ std::vector<std::shared_ptr<collider_t>> AMapGenerator::CalculateWallPositions()
 	return walls;
 }
 
+void AMapGenerator::SetMapReady()
+{
+	_isMapReady = true;
+	OnMapReady.Broadcast();
+}
+
 void AMapGenerator::GenerateMap()
 {
 	SpawnFloor();
 	SpawnWalls();
 	PlaceObstacle();
 	PlacePlayer();
+	
+	GetWorld()->GetTimerManager().SetTimerForNextTick(FTimerDelegate::CreateUObject(this, &ThisClass::SetMapReady));
+	SetMapReady();
 }
 
 void AMapGenerator::SpawnMapElement(USceneComponent* ComponentToSpawn, const FVector& Position, const FRotator& Rotation)
@@ -31,7 +49,7 @@ void AMapGenerator::SpawnMapElement(USceneComponent* ComponentToSpawn, const FVe
 	ComponentToSpawn->SetRelativeRotation(Rotation);
 			
 	ComponentToSpawn->RegisterComponent();
-	SpawnedMapElements.Add(ComponentToSpawn);
+	_spawnedMapElements.Add(ComponentToSpawn);
 }
 
 void AMapGenerator::PlaceObstacle()
@@ -40,11 +58,8 @@ void AMapGenerator::PlaceObstacle()
 
 void AMapGenerator::PlacePlayer()
 {
-	APlayerStart* playerStart = NewObject<APlayerStart>(this);
-	
-	FVector mapCenter = FVector(MapWidth * TileSize, MapHeight * TileSize, 0.f);
-	
-	playerStart->SetActorLocation(mapCenter);
+	FVector mapCenter = FVector(MapWidth * TileSize, MapHeight * TileSize, 10.f);
+	_playerStartPosition = mapCenter;
 }
 
 void AMapGenerator::SpawnFloor()
