@@ -35,6 +35,7 @@ inline constexpr std::array<point_t, 4> direction = {{
   {-1, 0}, {1, 0}, {0, 1}, {0, -1}
 }};
 
+
 struct cell_t {
   bool n = true, s = true, e = true, w = true;
 

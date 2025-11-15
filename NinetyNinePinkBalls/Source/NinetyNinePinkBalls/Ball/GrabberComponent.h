@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "CoreMinimal.h"
+#include "Blueprint/UserWidget.h"
 #include "Components/ActorComponent.h"
 #include "InputAction.h"
 #include "EnhancedInputComponent.h"
@@ -34,12 +35,18 @@ public:
 
 	UFUNCTION()
 	void Throw();
+	
+	UFUNCTION()
+	void ShowWinWidget();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grab")
 	float ReachDistance = 300.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grab")
 	float ThrowStrength = 1500.f;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="UI")
+	TSubclassOf<UUserWidget> WinWidgetClass;
 
 private:
 	// Helpers

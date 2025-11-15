@@ -7,6 +7,7 @@
 #include "Engine/World.h"
 #include "DrawDebugHelpers.h"
 #include "Components/InputComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 UGrabberComponent::UGrabberComponent()
 {
@@ -74,7 +75,10 @@ FHitResult UGrabberComponent::GetFirstPhysicsBodyInReach() const
 	const FVector LineTraceEnd = PlayerViewLocation + PlayerViewRotation.Vector() * ReachDistance;
 
 	FCollisionQueryParams TraceParams(FName(TEXT("")), false, GetOwner());
-	FCollisionObjectQueryParams ObjectQueryParams(ECC_PhysicsBody);
+	FCollisionObjectQueryParams ObjectQueryParams;
+	ObjectQueryParams.AddObjectTypesToQuery(ECC_PhysicsBody);
+	ObjectQueryParams.AddObjectTypesToQuery(ECC_WorldDynamic);
+	ObjectQueryParams.AddObjectTypesToQuery(ECC_Pawn);
 
 	FHitResult Hit;
 	GetWorld()->LineTraceSingleByObjectType(Hit, PlayerViewLocation, LineTraceEnd, ObjectQueryParams, TraceParams);
@@ -106,7 +110,17 @@ void UGrabberComponent::Grab()
 
 	FHitResult HitResult = GetFirstPhysicsBodyInReach();
 	UPrimitiveComponent* ComponentToGrab = HitResult.GetComponent();
-	GrabbedItem = HitResult.GetActor();
+	AActor* HitActor = HitResult.GetActor();
+	GrabbedItem = HitActor;
+
+	if (!HitActor)
+		return;
+
+	if (HitActor->ActorHasTag("CanBeCaptured"))
+	{
+		ShowWinWidget();
+		return;
+	}
 
 	if (GrabbedItem && ComponentToGrab)
 	{
@@ -144,4 +158,22 @@ void UGrabberComponent::Throw()
 	GrabbedComponent->AddImpulse(Impulse, NAME_None, true);
 	
 	GrabbedItem = nullptr;
+}
+
+void UGrabberComponent::ShowWinWidget()
+{
+	if (!WinWidgetClass) return;
+
+	APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();
+	if (!PlayerController) return;
+
+	UUserWidget* WinWidget = CreateWidget<UUserWidget>(PlayerController, WinWidgetClass);
+	if (WinWidget)
+	{
+		GrabbedItem = nullptr;
+		WinWidget->AddToViewport();
+		PlayerController->SetShowMouseCursor(true);
+		PlayerController->SetInputMode(FInputModeUIOnly());
+		UGameplayStatics::SetGlobalTimeDilation(GetWorld(), 0.0f);
+	}
 }
