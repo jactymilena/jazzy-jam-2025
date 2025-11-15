@@ -130,14 +130,32 @@ private:
   int threshold = 30;
   std::vector<std::vector<cell_t>> grid;
   vector_t start;
-  std::vector<std::unique_ptr<collider_t>> walls;
+  std::vector<std::shared_ptr<collider_t>> walls;
 
   std::mt19937 rng{ std::random_device{}() };
 
 public:
   [[nodiscard]] vector_t centroid() const { return start; }
 
-  std::vector<std::unique_ptr<collider_t>>& get_walls() { return walls; }
+  vector_t retrieve_safe_point() {
+    std::uniform_int_distribution<int> dist_x(0, width - 1);
+    std::uniform_int_distribution<int> dist_y(0, height - 1);
+
+    int rx = dist_x(rng);
+    int ry = dist_y(rng);
+
+    std::uniform_int_distribution<int> offset(
+      -segment_length * 0.75 / 2, segment_length * 0.75 / 2);
+
+
+    return vector_t{
+      rx * segment_length + segment_length / 2.0 + offset(rng),
+      ry * segment_length + segment_length / 2.0 + offset(rng),
+      0.0
+    };
+  }
+
+  std::vector<std::shared_ptr<collider_t>>& get_walls() { return walls; }
 
   map_t(const map_config_t& config)
       : width(config.width), height(config.height), grid(config.height, std::vector<cell_t>(config.height)), 
@@ -211,8 +229,8 @@ private:
         remove_wall(point_t{px, py}, next, dir);
 
         for (int i = 0; i < direction.size(); ++i) {
-          const auto& dir = direction[i];
-          queue.push_back({nx + dir.x, ny + dir.y, i, nx, ny});
+          const auto& dirc = direction[i];
+          queue.push_back({nx + dirc.x, ny + dirc.y, i, nx, ny});
         }
       }
     }
@@ -321,7 +339,7 @@ private:
       double y = std::get<1>(wall);
       wall_orientation o = std::get<2>(wall);
 
-      walls.push_back(std::make_unique<collider_t>(
+      walls.push_back(std::make_shared<collider_t>(
         vector_t{x, y, 0.0},
         o,
         static_cast<double>(segment_length)));
