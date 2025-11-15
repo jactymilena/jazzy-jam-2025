@@ -1,4 +1,7 @@
 ﻿#include "MapGenerator.h"
+#include "maze.cpp"
+
+#include "GameFramework/PlayerStart.h"
 
 void AMapGenerator::BeginPlay()
 {
@@ -6,19 +9,20 @@ void AMapGenerator::BeginPlay()
 	GenerateMap();
 }
 
-TArray<FWallPosition> AMapGenerator::CalculateWallPositions()
+std::vector<std::shared_ptr<collider_t>> AMapGenerator::CalculateWallPositions()
 {
-	TArray<FWallPosition> WallPositions = {
-		FWallPosition{FVector(500.f, 500.f, 0.f), EWallOrientation::Vertical},
-		FWallPosition{FVector(1000.f, 1000.f, 0.f), EWallOrientation::Horizontal}
-	};
-	return WallPositions;
+	map_t map(MapWidth, MapHeight, TileSize);
+	auto walls = map.get_walls();
+	
+	return walls;
 }
 
 void AMapGenerator::GenerateMap()
 {
 	SpawnFloor();
 	SpawnWalls();
+	PlaceObstacle();
+	PlacePlayer();
 }
 
 void AMapGenerator::SpawnMapElement(USceneComponent* ComponentToSpawn, const FVector& Position, const FRotator& Rotation)
@@ -30,35 +34,48 @@ void AMapGenerator::SpawnMapElement(USceneComponent* ComponentToSpawn, const FVe
 	SpawnedMapElements.Add(ComponentToSpawn);
 }
 
+void AMapGenerator::PlaceObstacle()
+{
+}
+
+void AMapGenerator::PlacePlayer()
+{
+	APlayerStart* playerStart = NewObject<APlayerStart>(this);
+	
+	FVector mapCenter = FVector(MapWidth * TileSize, MapHeight * TileSize, 0.f);
+	
+	playerStart->SetActorLocation(mapCenter);
+}
+
 void AMapGenerator::SpawnFloor()
 {
-	for (int i =0; i< MapWidth; i++)
+	FVector startPosition = FVector(250.f, 250.f, 0.f);
+	for (int i = 0; i< MapWidth; i++)
 	{
-		for (int j =0; j< MapHeight; j++)
+		for (int j = 0; j< MapHeight; j++)
 		{
 			UStaticMeshComponent* spawnedFloorTile = NewObject<UStaticMeshComponent>(this);
 			spawnedFloorTile->SetStaticMesh(FloorMeshes[0]);
-			const auto Position = FVector(TileSize * i, TileSize * j, 0.f);
-			
-			
-			SpawnMapElement(spawnedFloorTile, Position);
+			const auto position = FVector(TileSize * i, TileSize * j, 0.f) + startPosition;
+			SpawnMapElement(spawnedFloorTile, position);
 		}
 	}
 }
 
 void AMapGenerator::SpawnWalls()
 {
-	TArray<FWallPosition> wallPositions = CalculateWallPositions();
-	for (FWallPosition wallPosition : wallPositions)
+	std::vector<std::shared_ptr<collider_t>> wallPositions = CalculateWallPositions();
+	
+	for (const auto& wallPosition : wallPositions)
 	{
 		UStaticMeshComponent* wallToSpawn = NewObject<UStaticMeshComponent>(this);
-
+	
 		wallToSpawn->SetStaticMesh(WallMeshes[0]);
 		
-		FRotator rotation = wallPosition.Orientation == EWallOrientation::Vertical 
+		FRotator rotation = wallPosition->orientation == wall_orientation::V
 			? FRotator{} 
 			: FRotator(0, 90.f, 0.f);
 		
-		SpawnMapElement(wallToSpawn, wallPosition.Position, rotation);
+		SpawnMapElement(wallToSpawn, wallPosition->centroid, rotation);
 	}
 }

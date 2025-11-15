@@ -1,11 +1,18 @@
 ﻿#pragma once
 
+#include <memory>
+
 // UE
+#include <vector>
+
 #include "CoreMinimal.h"
 #include "UObject/Object.h"
 
 // Generated
 #include "MapGenerator.generated.h"
+
+struct collider_t;
+struct FWallPosition;
 
 enum class EWallOrientation
 {
@@ -13,18 +20,20 @@ enum class EWallOrientation
 	Horizontal,
 };
 
-struct FWallPosition
-{
-	FWallPosition(const FVector& Position, const EWallOrientation Orientation) : Position(Position), Orientation(Orientation) {}
-	FVector Position{};
-	EWallOrientation Orientation {};
-};
+
+
+// struct FWallPosition
+// {
+// 	FWallPosition(const FVector& Position, const EWallOrientation Orientation) : Position(Position), Orientation(Orientation) {}
+// 	FVector Position{};
+// 	EWallOrientation Orientation {};
+// };
 
 /**
  * Handles the spawning of floor tiles and walls
  */
 UCLASS(Abstract, Blueprintable)
-class NINETYNINEPINKBALLS_API AMapGenerator : public AActor
+class NINETYNINEPINKBALLS_API  AMapGenerator : public AActor
 {
 	GENERATED_BODY()
 	
@@ -32,10 +41,14 @@ protected:
 	virtual void BeginPlay() override;
 	
 private:
-	TArray<FWallPosition> CalculateWallPositions();
+	std::vector<std::shared_ptr<collider_t>>  CalculateWallPositions();
+
 	void GenerateMap();
 	void SpawnMapElement(USceneComponent* ComponentToSpawn, const FVector& Position, const FRotator& Rotation = {});
 
+	void PlaceObstacle();
+	void PlacePlayer();
+	
 	void SpawnFloor();
 	void SpawnWalls();
 	
