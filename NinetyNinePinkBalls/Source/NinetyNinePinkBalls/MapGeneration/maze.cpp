@@ -10,10 +10,6 @@
 #include <fstream>
 #include <iostream>
 
-// template<typename T>
-// struct TVector{ T X; T Y; T Z; };
-//
-// using FVector = TVector<double>;
 
 using vector_t = FVector;
 
