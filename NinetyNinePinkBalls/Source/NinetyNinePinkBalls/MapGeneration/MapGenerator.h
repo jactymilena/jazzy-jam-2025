@@ -75,6 +75,9 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category="Map Options")
 	int32 MapHeight;
 	
+	UPROPERTY(EditDefaultsOnly, Category="Map Options")
+	int32 Threshold = 30;
+	
 	UPROPERTY(EditDefaultsOnly, Category="Tile Settings")
 	float TileSize = 500.f;
 	

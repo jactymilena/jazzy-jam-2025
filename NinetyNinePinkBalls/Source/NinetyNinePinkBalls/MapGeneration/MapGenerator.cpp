@@ -20,7 +20,13 @@ void AMapGenerator::BeginPlay()
 
 std::vector<std::shared_ptr<collider_t>> AMapGenerator::CalculateWallPositions()
 {
-	map_t map(MapWidth, MapHeight, TileSize);
+	map_config_t config;
+	config.height = MapHeight;
+	config.width = MapWidth;
+	config.segment_length = TileSize;
+	config.threshold = Threshold;
+	
+	map_t map {config};
 	auto walls = map.get_walls();
 	
 	return walls;
