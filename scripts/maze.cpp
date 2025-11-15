@@ -85,7 +85,7 @@ struct collider_t {
 
 class map_t {
 private:
-  int size;
+  int segment_length;
   int width;
   int height;
   std::vector<std::vector<cell_t>> grid;
@@ -97,8 +97,10 @@ private:
 public:
   [[nodiscard]] vector_t centroid() const { return start; }
 
-  map_t(int w, int h)
-      : width(w), height(h), grid(h, std::vector<cell_t>(w)),
+  std::vector<std::unique_ptr<collider_t>>& get_walls() { return walls; }
+
+  map_t(int w, int h, int sl)
+      : width(w), height(h), grid(h, std::vector<cell_t>(w)), segment_length(sl),
         start{static_cast<double>(w) / 2.0, static_cast<double>(h) / 2.0, 0.0} {
     prim(point_t{0, 0});
     generate_colliders();
@@ -195,33 +197,34 @@ private:
     for (size_t i = 0; i < grid.size(); ++i) {
       for (size_t j = 0; j < grid[i].size(); ++j) {
         const auto& cell = grid[i][j];
-        double iw = i * height;
-        double jw = j * width;
+        double iw = i * segment_length;
+        double jw = j * segment_length;
+        double half = segment_length / 2.0;
 
 
         if (cell.n) {
           walls.push_back(std::make_unique<collider_t>(
-            vector_t{jw + width / 2.0, iw, 0.0},
+            vector_t{jw + half, iw, 0.0},
             wall_orientation::H,
-            static_cast<double>(width)));
+            static_cast<double>(segment_length)));
         }
         if (cell.s) {
           walls.push_back(std::make_unique<collider_t>(
-            vector_t{jw + width / 2.0, iw + height, 0.0},
+            vector_t{jw + half, iw + segment_length, 0.0},
             wall_orientation::H,
-            static_cast<double>(width)));
+            static_cast<double>(segment_length)));
         }
         if (cell.e) {
           walls.push_back(std::make_unique<collider_t>(
-            vector_t{jw + width, iw + height / 2.0, 0.0},
+            vector_t{jw + segment_length, iw + half, 0.0},
             wall_orientation::V,
-            static_cast<double>(height)));
+            static_cast<double>(segment_length)));
         }
         if (cell.w) {
           walls.push_back(std::make_unique<collider_t>(
-            vector_t{jw, iw + height / 2.0, 0.0},
+            vector_t{jw, iw + half, 0.0},
             wall_orientation::V,
-            static_cast<double>(height)));
+            static_cast<double>(segment_length)));
         }
       }
     }
@@ -230,7 +233,7 @@ private:
 
 
 int main() {
-  map_t m{20, 20};
+  map_t m{20, 20, 10};
   std::ofstream ofs("maze.tex");
   ofs << m.latex();
 
