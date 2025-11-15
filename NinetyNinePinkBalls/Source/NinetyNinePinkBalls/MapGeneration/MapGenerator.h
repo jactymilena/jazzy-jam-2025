@@ -69,6 +69,9 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category="Map Elements")	
 	TArray<UStaticMesh*> FloorMeshes;
 	
+	UPROPERTY(EditDefaultsOnly, Category="Map Elements")
+	TArray<UStaticMesh*> DoorMeshes;
+	
 	UPROPERTY(EditDefaultsOnly, Category="Map Options")
 	int32 MapWidth;
 	
