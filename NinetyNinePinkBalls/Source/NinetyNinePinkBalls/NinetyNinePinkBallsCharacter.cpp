@@ -32,6 +32,9 @@ ANinetyNinePinkBallsCharacter::ANinetyNinePinkBallsCharacter()
 	FirstPersonCameraComponent->bEnableFirstPersonScale = true;
 	FirstPersonCameraComponent->FirstPersonFieldOfView = 70.0f;
 	FirstPersonCameraComponent->FirstPersonScale = 0.6f;
+	
+	// Create the Grabber Component
+	GrabberComponent = CreateDefaultSubobject<UGrabberComponent>(TEXT("GrabberComponent"));
 
 	// configure the character comps
 	GetMesh()->SetOwnerNoSee(true);
