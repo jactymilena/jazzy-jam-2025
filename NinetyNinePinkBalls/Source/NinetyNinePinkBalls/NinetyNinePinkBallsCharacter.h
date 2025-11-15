@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Ball/GrabberComponent.h"
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
 #include "NinetyNinePinkBallsCharacter.generated.h"
@@ -89,6 +90,9 @@ public:
 
 	/** Returns first person camera component **/
 	UCameraComponent* GetFirstPersonCameraComponent() const { return FirstPersonCameraComponent; }
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	UGrabberComponent* GrabberComponent;
 
 };
 
