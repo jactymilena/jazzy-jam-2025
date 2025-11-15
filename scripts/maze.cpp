@@ -100,8 +100,11 @@ public:
   std::vector<std::unique_ptr<collider_t>>& get_walls() { return walls; }
 
   map_t(int w, int h, int sl)
-      : width(w), height(h), grid(h, std::vector<cell_t>(w)), segment_length(sl),
-        start{static_cast<double>(w) / 2.0, static_cast<double>(h) / 2.0, 0.0} {
+      : width(w), height(h), grid(h, std::vector<cell_t>(w)), segment_length(sl) {
+    auto dist_w = std::uniform_int_distribution<int>(0, w - 1);
+    start.X = dist_w(rng) * segment_length + segment_length / 2.0;
+    auto dist_h = std::uniform_int_distribution<int>(0, h - 1);
+    start.Y = dist_h(rng) * segment_length + segment_length / 2.0;
     prim(point_t{0, 0});
     generate_colliders();
   }
@@ -233,7 +236,7 @@ private:
 
 
 int main() {
-  map_t m{20, 20};
+  map_t m{20, 20, 10};
   std::ofstream ofs("maze.tex");
   ofs << m.latex();
 
