@@ -59,8 +59,9 @@ private:
 	
 	void SpawnFloor();
 	void SpawnWalls();
+	void SpawnBalls();
 	
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(VisibleAnywhere)
 	TArray<TWeakObjectPtr<USceneComponent>> _spawnedMapElements;
 	
 	UPROPERTY(EditDefaultsOnly, Category="Map Elements")	
@@ -84,6 +85,15 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category="Tile Settings")
 	float TileSize = 500.f;
 	
+	UPROPERTY(EditDefaultsOnly, Category="Balls settings")
+	TSubclassOf<AActor> _ballActorClass;
+
+	UPROPERTY(EditDefaultsOnly, Category="Balls settings")
+	TSubclassOf<AActor> _hauntedBallActorClass;
+
+	UPROPERTY(EditDefaultsOnly, Category="Balls settings")
+	int32 _ballCount = 0;
+
 	bool _isMapReady = false;
 	FVector _playerStartPosition = FVector::Zero();
 };

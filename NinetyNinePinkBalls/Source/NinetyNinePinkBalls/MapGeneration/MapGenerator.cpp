@@ -366,9 +366,9 @@ void AMapGenerator::GenerateMap()
 	SpawnFloor();
 	SpawnWalls();
 	PlaceObstacle();
+  SpawnBalls();
 	PlacePlayer();
 	
-	GetWorld()->GetTimerManager().SetTimerForNextTick(FTimerDelegate::CreateUObject(this, &ThisClass::SetMapReady));
 	SetMapReady();
 }
 
@@ -422,4 +422,16 @@ void AMapGenerator::SpawnWalls()
 		
 		SpawnMapElement(wallToSpawn, wallPosition->centroid, rotation);
 	}
+}
+
+void AMapGenerator::SpawnBalls()
+{
+  for (int i = 0; i < _ballCount; ++i)
+  {
+      float posx = FMath::RandRange(0.f, MapWidth * TileSize);
+      float posy = FMath::RandRange(0.f, MapHeight * TileSize);
+      FVector ballPosition = FVector(posx, posy, 150.f);
+      GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Magenta, ballPosition.ToString());
+      GetWorld()->SpawnActor(_ballActorClass, &ballPosition);
+  }
 }
