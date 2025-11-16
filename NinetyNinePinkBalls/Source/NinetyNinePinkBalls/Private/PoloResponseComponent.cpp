@@ -16,7 +16,9 @@ void UPoloResponseComponent::PlayResponseSound()
 			SoundLocation,
 			SoundRotation,
 			VolumeMultiplier,
-			PitchMultiplier
+			PitchMultiplier,
+			0.0f,
+			AttenuationSettings
 		);
 	}
 }

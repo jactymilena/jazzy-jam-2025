@@ -23,6 +23,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "Sound")
 	USoundBase* ResponseSound;
 	
+	UPROPERTY(EditDefaultsOnly, Category = "Sound")
+	USoundAttenuation* AttenuationSettings;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
 	float VolumeMultiplier = 1.0f;
 	

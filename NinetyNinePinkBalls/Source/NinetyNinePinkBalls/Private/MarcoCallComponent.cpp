@@ -15,7 +15,9 @@ void UMarcoCallComponent::PlayCallSound()
 			SoundLocation,
 			SoundRotation,
 			VolumeMultiplier,
-			PitchMultiplier
+			PitchMultiplier,
+			0.0f,
+			AttenuationSettings
 		);
 	}
 }
