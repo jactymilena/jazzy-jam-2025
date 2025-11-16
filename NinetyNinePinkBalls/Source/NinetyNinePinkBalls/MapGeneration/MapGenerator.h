@@ -3,6 +3,8 @@
 #include <memory>
 
 // UE
+#include <memory>
+#include <vector>
 #include <vector>
 
 #include "CoreMinimal.h"
@@ -11,8 +13,13 @@
 // Generated
 #include "MapGenerator.generated.h"
 
+namespace pavage
+{
+	struct collider_t;
+}
+
 struct collider_t;
-struct FWallPosition;
+struct map_config_t;
 
 enum class EWallOrientation
 {
@@ -48,16 +55,23 @@ protected:
 	virtual void BeginPlay() override;
 	
 private:
-	std::vector<std::shared_ptr<collider_t>>  CalculateWallPositions();
+	std::vector<std::shared_ptr<collider_t>> CalculatePositionsWithMap();
+	std::vector<std::shared_ptr<pavage::collider_t>> CalculatePositionsWithPavage();
+	map_config_t GetConfig() const;
 
 	void SetMapReady();
+	void SpawnWallsAndDoors();
 	void GenerateMap();
 	void SpawnMapElement(USceneComponent* ComponentToSpawn, const FVector& Position, const FRotator& Rotation = {});
 
 	void PlaceObstacle();
 	
 	void SpawnFloor();
+	
+	//template<class T>
 	void SpawnWalls();
+	
+	
 	void SpawnBalls();
 	
 	UPROPERTY(VisibleAnywhere)
@@ -101,4 +115,6 @@ private:
 
 	bool _isMapReady = false;
 	FVector _playerStartPosition = FVector::Zero();
+	FVector _ghostPosition = FVector::Zero();;
+
 };

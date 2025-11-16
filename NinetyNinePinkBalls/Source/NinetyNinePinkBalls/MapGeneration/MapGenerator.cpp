@@ -563,7 +563,7 @@ namespace pavage {
     placement_t(int w, int h, std::vector<piece_t> p) 
       : width(w), height(h), pieces(p), grid(h, std::vector<int>(w, -1)) {}
 
-    vector_t retrieve_safe_point() {
+    vector_t retrieve_safe_point(int segment_length) {
       std::uniform_int_distribution<int> dist_x(0, width - 1);
       std::uniform_int_distribution<int> dist_y(0, height - 1);
 
@@ -572,7 +572,7 @@ namespace pavage {
       do {
         rx = dist_x(rng);
         ry = dist_y(rng);
-      } while (grid[ry][rx] != -1);
+      } while (grid[ry][rx] == -1);
 
       std::uniform_int_distribution<int> offset(
       -segment_length * 0.75 / 2, segment_length * 0.75 / 2);
@@ -647,13 +647,13 @@ namespace pavage {
     std::vector<std::shared_ptr<collider_t>> walls;
     placement_t placer;
 
-    map_t(int w, int h, int csize, std::vector<piece_t> pieces)
-      : width(w), height(h), cell_size(csize), placer(w, h, pieces) {
+    map_t(int w, int h, int segment_length, std::vector<piece_t> pieces)
+      : width(w), height(h), cell_size(segment_length), placer(w, h, pieces) {
       placer.solve();
-      walls = placer.retrieve_walls(csize);
+      walls = placer.retrieve_walls(cell_size);
     }
 
-    vector_t retrieve_safe_point() { return placer.retrieve_safe_point(); }
+    vector_t retrieve_safe_point() { return placer.retrieve_safe_point(cell_size); }
     std::vector<std::shared_ptr<collider_t>>& get_walls() { return walls; }
 
     [[nodiscard]] std::string latex() const {
@@ -684,8 +684,69 @@ namespace pavage {
       return oss.str();
     }
   };
+  
+  std::vector<piece_t> pieces = {
+        { 
+          { 
+            {0,5},
+            {0,4},
+            {0,3},
+            {0,2},
+            {0,1}, {1,1}, {2,1}, {3,1}, {4,1}, {5,1},
+            {0,0}, {1,0}, {2,0}, {3,0}, {4,0}, {5,0},
+          },1, 10 
+        },
+        {
+          {
+            {0,5}, {1,5},               {4,5}, {5,5}, 
+            {0,4}, {1,4},               {4,4}, {5,4}, 
+            {0,3}, {1,3}, {2,3}, {3,3}, {4,3}, {5,3},
+            {0,2}, {1,2}, {2,2}, {3,2}, {4,2}, {5,2},
+            {0,1}, {1,1},               {4,1}, {5,1}, 
+            {0,0}, {1,0},               {4,0}, {5,0}, 
+          }, 2, 10
+        },
+        {
+            {
+              {2,3}, {3,3}, {4,3}, {5,3},
+              {2,2}, {3,2}, {4,2}, {5,2},
+    {0,1}, {1,1}, {2,1}, {3,1},
+    {0,0}, {1,0}, {2,0}, {3,0},
+    }, 3, 10
+    },
+    {
+      {
+        {0,2}, {1,2}, {2,2},
+        {0,1}, {1,1}, {2,1},
+        {0,0}, {1,0}, {2,0}
+      }, 1, 4
+    },
+    {
+        {
+          {0,2},        {2,2},
+          {0,1}, {1,1}, {2,1},
+          {0,0},        {2,0}
+        }, 2, 10
+      },
+      {
+        {
+          {0, 0}
+        }, 3, 10 
+      },
+      {
+        {
+          {0,0}, {1,0}, {2,0}
+        }, 4, 10
+      },
+      {
+        {
+          {0,2},
+          {0,1},
+          {0,0}, {1,0}, {2,0}
+        }, 5, 10
+      }
+  };
 };
-
 
 namespace
 {
@@ -709,19 +770,51 @@ void AMapGenerator::BeginPlay()
   GenerateMap();
 }
 
-std::vector<std::shared_ptr<collider_t>> AMapGenerator::CalculateWallPositions()
+map_config_t AMapGenerator::GetConfig() const
 {
-	map_config_t config;
-	config.height = MapHeight;
-	config.width = MapWidth;
-	config.segment_length = TileSize;
-	config.threshold = Threshold;
+  map_config_t config;
+  config.height = MapHeight;
+  config.width = MapWidth;
+  config.segment_length = TileSize;
+  config.threshold = Threshold;
+  return config;
+}
+
+std::vector<std::shared_ptr<collider_t>> AMapGenerator::CalculatePositionsWithMap()
+{
+	map_config_t config = GetConfig();
 	
 	map_t map {config};
 	auto walls = map.get_walls();
   _playerStartPosition = map.retrieve_safe_point();
+
+  _ghostPosition = map.retrieve_safe_point();
+  int32 tries = 0;
+  while (!FVector::PointsAreNear(_ghostPosition, _playerStartPosition, 1000.f) || tries > 5000)
+  {
+    _ghostPosition = map.retrieve_safe_point();
+    ++tries;
+  }
 	
 	return walls;
+}
+
+std::vector<std::shared_ptr<pavage::collider_t>> AMapGenerator::CalculatePositionsWithPavage()
+{
+  map_config_t config = GetConfig();
+
+  pavage::map_t map {config.width, config.height, config.segment_length, pavage::pieces};
+  _playerStartPosition = map.retrieve_safe_point();
+
+  _ghostPosition = map.retrieve_safe_point();
+  int32 tries = 0;
+  while (!FVector::PointsAreNear(_ghostPosition, _playerStartPosition, 1000.f) || tries > 5000)
+  {
+    _ghostPosition = map.retrieve_safe_point();
+    ++tries;
+  }
+  
+  return map.get_walls();
 }
 
 void AMapGenerator::SetMapReady()
@@ -733,7 +826,14 @@ void AMapGenerator::SetMapReady()
 void AMapGenerator::GenerateMap()
 {
 	SpawnFloor();
-	SpawnWalls();
+  if (UsesPavage)
+  {
+    SpawnWallsAndDoors();
+  }
+  else
+  {
+    SpawnWalls();
+  }
 	PlaceObstacle();
   SpawnBalls();
 	
@@ -771,7 +871,7 @@ void AMapGenerator::SpawnFloor()
 
 void AMapGenerator::SpawnWalls()
 {
-	std::vector<std::shared_ptr<collider_t>> wallPositions = CalculateWallPositions();
+	std::vector<std::shared_ptr<collider_t>> wallPositions = CalculatePositionsWithMap();
 	
 	for (const auto& wallPosition : wallPositions)
 	{
@@ -787,6 +887,25 @@ void AMapGenerator::SpawnWalls()
 	}
 }
 
+void AMapGenerator::SpawnWallsAndDoors()
+{
+  std::vector<std::shared_ptr<pavage::collider_t>> wallPositions = CalculatePositionsWithPavage();
+	
+  for (const auto& wallPosition : wallPositions)
+  {
+    UStaticMeshComponent* wallToSpawn = NewObject<UStaticMeshComponent>(this);
+	
+    UStaticMesh* mesh = wallPosition->is_door ? DoorMeshes[0] :WallMeshes[0];
+    wallToSpawn->SetStaticMesh(mesh);
+		
+    FRotator rotation = wallPosition->orientation == wall_orientation::V
+      ? FRotator{} 
+    : FRotator(0, 90.f, 0.f);
+		
+    SpawnMapElement(wallToSpawn, wallPosition->centroid, rotation);
+  }
+}
+
 void AMapGenerator::SpawnBalls()
 {
   for (int i = 0; i < _ballCount; ++i)
@@ -796,4 +915,5 @@ void AMapGenerator::SpawnBalls()
       FVector ballPosition = FVector(posx, posy, 150.f);
       GetWorld()->SpawnActor(_ballActorClass, &ballPosition);
   }
+  GetWorld()->SpawnActor(_hauntedBallActorClass, &_ghostPosition);
 }
