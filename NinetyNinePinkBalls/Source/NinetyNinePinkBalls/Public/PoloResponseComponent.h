@@ -13,7 +13,8 @@ class NINETYNINEPINKBALLS_API UPoloResponseComponent : public USphereComponent
 
 private:
 	void PlayResponseSound();	
-
+	float CalculateRandomDelay() const;
+	bool ShouldRespond() const;
 public:	
 	FTimerHandle MyDelayTimerHandle;
 	
@@ -22,6 +23,9 @@ public:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
 	float DelayToRespondDelta = 0.5f;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound", meta = (UIMin = "0.0", UIMax = "100.0", ClampMin = "0.0", ClampMax = "100.0"))
+	float ProbabilityToRespond = 100;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Sound")
 	USoundBase* ResponseSound;

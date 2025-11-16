@@ -24,22 +24,41 @@ void UPoloResponseComponent::PlayResponseSound()
 	}
 }
 
+bool UPoloResponseComponent::ShouldRespond() const
+{
+	constexpr float ProbabilityMinRange = 0.0f;
+	constexpr float ProbabilityMaxRange = 100.0f;
+	
+	const float Probability = FMath::FRandRange(ProbabilityMinRange, ProbabilityMaxRange);
+	
+	return Probability < ProbabilityToRespond;
+}
+
+float UPoloResponseComponent::CalculateRandomDelay() const
+{
+	const float MinDelay = std::max(DelayToRespond - DelayToRespondDelta, 0.0f);
+	const float MaxDelay = DelayToRespond + DelayToRespondDelta;
+	
+	return FMath::FRandRange(MinDelay, MaxDelay);
+}
+
 void UPoloResponseComponent::RespondPolo()
 {
 	if (GEngine)
 		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Blue, "Polo Response");
 	
-	OnPoloResponse.Broadcast();
+	if (ShouldRespond())
+	{
+		OnPoloResponse.Broadcast();
+        const float Delay = CalculateRandomDelay();
+        
+        GetWorld()->GetTimerManager().SetTimer(
+        	MyDelayTimerHandle,
+        	this,
+        	&UPoloResponseComponent::PlayResponseSound,
+        	Delay,
+        	false
+        );
+	}
 	
-	float MinDelay = std::max(DelayToRespond - DelayToRespondDelta, 0.0f);
-	float MaxDelay = DelayToRespond + DelayToRespondDelta;
-	float Delay = FMath::FRandRange(MinDelay, MaxDelay);
-	
-	GetWorld()->GetTimerManager().SetTimer(
-		MyDelayTimerHandle,
-		this,
-		&UPoloResponseComponent::PlayResponseSound,
-		Delay,
-		false
-	);
 }

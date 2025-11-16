@@ -36,9 +36,6 @@ void UMarcoCallComponent::CallMarco()
 		if (IsValid(PoloComponent))
 			PoloComponent->RespondPolo();
 	}
-	
-	if (GEngine)
-		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Red, FString::Printf(TEXT("Array Count: %d"), OverlappingBalls.Num()));
 }
 
 
