@@ -284,7 +284,7 @@ namespace pavage {
       do {
         rx = dist_x(rng);
         ry = dist_y(rng);
-      } while (grid[ry][rx] != -1);
+      } while (grid[ry][rx] == -1);
 
       std::uniform_int_distribution<int> offset(
       -segment_length * 0.75 / 2, segment_length * 0.75 / 2);
