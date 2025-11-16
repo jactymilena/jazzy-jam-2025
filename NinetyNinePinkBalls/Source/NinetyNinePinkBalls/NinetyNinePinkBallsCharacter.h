@@ -8,6 +8,7 @@
 #include "Logging/LogMacros.h"
 #include "NinetyNinePinkBallsCharacter.generated.h"
 
+class UPauseComponent;
 class UInputComponent;
 class USkeletalMeshComponent;
 class UCameraComponent;
@@ -93,6 +94,9 @@ public:
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	UGrabberComponent* GrabberComponent;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	UPauseComponent* PauseComponent;
 
 };
 

@@ -9,6 +9,7 @@
 #include "InputActionValue.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "NinetyNinePinkBalls.h"
+#include "PauseComponent.h"
 
 ANinetyNinePinkBallsCharacter::ANinetyNinePinkBallsCharacter()
 {
@@ -35,6 +36,9 @@ ANinetyNinePinkBallsCharacter::ANinetyNinePinkBallsCharacter()
 	
 	// Create the Grabber Component
 	GrabberComponent = CreateDefaultSubobject<UGrabberComponent>(TEXT("GrabberComponent"));
+
+	// Create the Pause Component
+	PauseComponent = CreateDefaultSubobject<UPauseComponent>(TEXT("GrabberComponent"));
 
 	// configure the character comps
 	GetMesh()->SetOwnerNoSee(true);
