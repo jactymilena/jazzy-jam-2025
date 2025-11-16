@@ -451,7 +451,6 @@ void AMapGenerator::SpawnBalls()
       float posx = FMath::RandRange(0.f, MapWidth * TileSize);
       float posy = FMath::RandRange(0.f, MapHeight * TileSize);
       FVector ballPosition = FVector(posx, posy, 150.f);
-      GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Magenta, ballPosition.ToString());
       GetWorld()->SpawnActor(_ballActorClass, &ballPosition);
   }
 }
