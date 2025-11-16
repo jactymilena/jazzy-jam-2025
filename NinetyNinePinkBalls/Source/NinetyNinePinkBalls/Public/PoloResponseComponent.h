@@ -17,4 +17,9 @@ public:
 	
 	UFUNCTION(BlueprintCallable)
 	void RespondPolo();
+	
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FPoloResponseDelegate);
+
+	UPROPERTY(BlueprintAssignable, Category = "Delegates")
+	FPoloResponseDelegate OnPoloResponse;
 };
