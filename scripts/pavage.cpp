@@ -275,7 +275,7 @@ namespace pavage {
     placement_t(int w, int h, std::vector<piece_t> p) 
       : width(w), height(h), pieces(p), grid(h, std::vector<int>(w, -1)) {}
 
-    vector_t retrieve_safe_point() {
+    vector_t retrieve_safe_point(int segment_length) {
       std::uniform_int_distribution<int> dist_x(0, width - 1);
       std::uniform_int_distribution<int> dist_y(0, height - 1);
 
@@ -357,15 +357,15 @@ namespace pavage {
   struct map_t {
     int width, height, cell_size;
     std::vector<std::shared_ptr<collider_t>> walls;
-    pacement_t placer;
+    placement_t placer;
 
-    map_t(int w, int h, int csize, std::vector<piece_t> pieces)
-      : width(w), height(h), cell_size(csize), placer(w, h, pieces) {
+    map_t(int w, int h, int segment_length, std::vector<piece_t> pieces)
+      : width(w), height(h), cell_size(segment_length), placer(w, h, pieces) {
       placer.solve();
-      walls = placer.retrieve_walls(csize);
+      walls = placer.retrieve_walls(cell_size);
     }
 
-    vector_t retrieve_safe_point() { return placer.retrieve_safe_point(); }
+    vector_t retrieve_safe_point() { return placer.retrieve_safe_point(cell_size); }
     std::vector<std::shared_ptr<collider_t>>& get_walls() { return walls; }
 
     [[nodiscard]] std::string latex() const {
