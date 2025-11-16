@@ -1,9 +1,24 @@
 #include "MarcoCallComponent.h"
 #include "PoloResponseComponent.h"
+#include "Fonts/UnicodeBlockRange.h"
 
 #include "Kismet/GameplayStatics.h"
 
-void UMarcoCallComponent::PlayCallSound()
+void UMarcoCallComponent::BeginPlay()
+{
+	Super::BeginPlay();
+	
+	TArray<AActor*> FoundActors;
+	UGameplayStatics::GetAllActorsWithTag(GetWorld(), "CanBeCaptured", FoundActors);
+	
+	if (FoundActors.Num() > 0 && IsValid(FoundActors[0]))
+	{
+		ActorToCall = FoundActors[0];
+		PoloComponentToCall = ActorToCall->FindComponentByClass<UPoloResponseComponent>();
+	}
+}
+
+void UMarcoCallComponent::PlayCallSound() const 
 {
 	if (IsValid(CallSound))
 	{
@@ -30,11 +45,21 @@ void UMarcoCallComponent::CallMarco()
 	GetOverlappingActors(OverlappingBalls);
 	
 	PlayCallSound();
-	for (AActor* Actor : OverlappingBalls)
+	
+	if (PoloComponentToCall.IsValid())
 	{
-		UPoloResponseComponent* PoloComponent = Actor->FindComponentByClass<UPoloResponseComponent>();
-		if (IsValid(PoloComponent))
-			PoloComponent->RespondPolo();
+		PoloComponentToCall->RespondPolo();
+	}
+	
+	for (const AActor* Actor : OverlappingBalls)
+	{
+		if (Actor != ActorToCall)
+		{
+			if (UPoloResponseComponent* PoloComponent = Actor->FindComponentByClass<UPoloResponseComponent>(); IsValid(PoloComponent))
+			{
+				PoloComponent->RespondPolo();
+			}
+		}
 	}
 }
 
