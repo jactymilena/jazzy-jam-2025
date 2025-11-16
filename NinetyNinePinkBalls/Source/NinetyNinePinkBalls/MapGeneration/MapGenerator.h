@@ -73,6 +73,9 @@ private:
 	TArray<UStaticMesh*> DoorMeshes;
 	
 	UPROPERTY(EditDefaultsOnly, Category="Map Options")
+	bool UsesPavage = true;
+	
+	UPROPERTY(EditDefaultsOnly, Category="Map Options")
 	int32 MapWidth;
 	
 	UPROPERTY(EditDefaultsOnly, Category="Map Options")
