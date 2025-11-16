@@ -814,6 +814,8 @@ std::vector<std::shared_ptr<pavage::collider_t>> AMapGenerator::CalculatePositio
     ++tries;
   }
   
+  _ghostPosition += MAP_OFFSET.X * FVector::UpVector;
+  
   return map.get_walls();
 }
 
