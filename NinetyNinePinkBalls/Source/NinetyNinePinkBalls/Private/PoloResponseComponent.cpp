@@ -31,7 +31,7 @@ bool UPoloResponseComponent::ShouldRespond() const
 	
 	const float Probability = FMath::FRandRange(ProbabilityMinRange, ProbabilityMaxRange);
 	
-	return Probability < ProbabilityToRespond;
+	return Probability <= ProbabilityToRespond;
 }
 
 float UPoloResponseComponent::CalculateRandomDelay() const
