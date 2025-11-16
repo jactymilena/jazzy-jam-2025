@@ -10,10 +10,24 @@ UCLASS(Blueprintable, BlueprintType)
 class NINETYNINEPINKBALLS_API UPoloResponseComponent : public USphereComponent
 {
 	GENERATED_BODY()
-	
+
+private:
+	void PlayResponseSound();	
+
 public:	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Collision")
-	float MyPoloCollisionRadius = 50.0f;
+	FTimerHandle MyDelayTimerHandle;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
+	float DelayToRespond = 1.0f;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Sound")
+	USoundBase* ResponseSound;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
+	float VolumeMultiplier = 1.0f;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
+	float PitchMultiplier = 1.0f;
 	
 	UFUNCTION(BlueprintCallable)
 	void RespondPolo();
