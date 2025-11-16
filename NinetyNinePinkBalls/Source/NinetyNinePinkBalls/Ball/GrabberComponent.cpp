@@ -85,6 +85,11 @@ FHitResult UGrabberComponent::GetFirstPhysicsBodyInReach() const
 
 	// Debug
 	// DrawDebugLine(GetWorld(), PlayerViewLocation, LineTraceEnd, FColor::Green, false, 20.0f);
+	if (IsValid(Hit.GetActor()))
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Red, *FString(Hit.GetActor()->GetName()));
+		GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Red, *FString(Hit.GetComponent()->GetName()));
+	}
 
 	return Hit;
 }
@@ -106,14 +111,13 @@ void UGrabberComponent::GrabThrow()
 
 void UGrabberComponent::Grab()
 {
-	if (!PhysicsHandle) return;
+	if (!IsValid(PhysicsHandle)) return;
 
 	FHitResult HitResult = GetFirstPhysicsBodyInReach();
 	UPrimitiveComponent* ComponentToGrab = HitResult.GetComponent();
 	AActor* HitActor = HitResult.GetActor();
-	GrabbedItem = HitActor;
 
-	if (!HitActor)
+	if (!IsValid(HitActor))
 		return;
 
 	if (HitActor->ActorHasTag("CanBeCaptured"))
@@ -122,10 +126,12 @@ void UGrabberComponent::Grab()
 		return;
 	}
 
-	if (GrabbedItem && ComponentToGrab)
+	if (IsValid(ComponentToGrab))
 	{
 		if (ComponentToGrab->IsSimulatingPhysics())
 		{
+			GrabbedItem = HitActor;
+
 			FVector GrabLocation = ComponentToGrab->GetCenterOfMass();
 			FRotator GrabRotation = ComponentToGrab->GetComponentRotation();
 
