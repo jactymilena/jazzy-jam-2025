@@ -85,11 +85,11 @@ FHitResult UGrabberComponent::GetFirstPhysicsBodyInReach() const
 
 	// Debug
 	// DrawDebugLine(GetWorld(), PlayerViewLocation, LineTraceEnd, FColor::Green, false, 20.0f);
-	if (IsValid(Hit.GetActor()))
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Red, *FString(Hit.GetActor()->GetName()));
-		GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Red, *FString(Hit.GetComponent()->GetName()));
-	}
+	// if (IsValid(Hit.GetActor()))
+	// {
+	// 	GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Red, *FString(Hit.GetActor()->GetName()));
+	// 	GEngine->AddOnScreenDebugMessage(-1, 10.f, FColor::Red, *FString(Hit.GetComponent()->GetName()));
+	// }
 
 	return Hit;
 }
