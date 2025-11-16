@@ -122,6 +122,7 @@ void UGrabberComponent::Grab()
 
 	if (HitActor->ActorHasTag("CanBeCaptured"))
 	{
+		PlayWinningSound();
 		ShowWinWidget();
 		return;
 	}
@@ -183,3 +184,12 @@ void UGrabberComponent::ShowWinWidget()
 		UGameplayStatics::SetGlobalTimeDilation(GetWorld(), 0.0f);
 	}
 }
+
+void UGrabberComponent::PlayWinningSound() const
+{
+	if (IsValid(WinningSound))
+	{
+		UGameplayStatics::PlaySound2D(GetWorld(), WinningSound);
+	}
+}
+
