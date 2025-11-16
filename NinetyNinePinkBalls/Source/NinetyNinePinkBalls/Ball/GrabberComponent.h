@@ -45,6 +45,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grab")
 	float ThrowStrength = 1500.f;
 	
+	UPROPERTY(EditDefaultsOnly, Category = "Sound")
+	USoundBase* WinningSound;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="UI")
 	TSubclassOf<UUserWidget> WinWidgetClass;
 
@@ -55,6 +58,8 @@ private:
 	FHitResult GetFirstPhysicsBodyInReach() const;
 	void GetPlayerViewPoint(FVector& OutLocation, FRotator& OutRotation) const;
 
+	void PlayWinningSound() const;
+	
 	// Owned components
 	UPROPERTY()
 	UPhysicsHandleComponent* PhysicsHandle = nullptr;
