@@ -18,7 +18,10 @@ public:
 	FTimerHandle MyDelayTimerHandle;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
-	float DelayToRespond = 1.0f;
+	float DelayToRespond = 2.0f;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Sound")
+	float DelayToRespondDelta = 0.5f;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Sound")
 	USoundBase* ResponseSound;

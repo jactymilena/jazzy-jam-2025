@@ -1,5 +1,6 @@
 ﻿#include "PoloResponseComponent.h"
 
+#include "CoreMinimal.h"
 #include "Engine/World.h"
 #include "Kismet/GameplayStatics.h"
 #include "TimerManager.h"
@@ -30,11 +31,15 @@ void UPoloResponseComponent::RespondPolo()
 	
 	OnPoloResponse.Broadcast();
 	
+	float MinDelay = std::max(DelayToRespond - DelayToRespondDelta, 0.0f);
+	float MaxDelay = DelayToRespond + DelayToRespondDelta;
+	float Delay = FMath::FRandRange(MinDelay, MaxDelay);
+	
 	GetWorld()->GetTimerManager().SetTimer(
 		MyDelayTimerHandle,
 		this,
 		&UPoloResponseComponent::PlayResponseSound,
-		DelayToRespond,
+		Delay,
 		false
 	);
 }
