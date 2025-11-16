@@ -790,7 +790,7 @@ std::vector<std::shared_ptr<collider_t>> AMapGenerator::CalculatePositionsWithMa
 
   _ghostPosition = map.retrieve_safe_point();
   int32 tries = 0;
-  while (!FVector::PointsAreNear(_ghostPosition, _playerStartPosition, 1000.f) || tries > 5000)
+  while (FVector::PointsAreNear(_ghostPosition, _playerStartPosition, 5000.f) && tries < 5000)
   {
     _ghostPosition = map.retrieve_safe_point();
     ++tries;
@@ -808,7 +808,7 @@ std::vector<std::shared_ptr<pavage::collider_t>> AMapGenerator::CalculatePositio
 
   _ghostPosition = map.retrieve_safe_point();
   int32 tries = 0;
-  while (!FVector::PointsAreNear(_ghostPosition, _playerStartPosition, 1000.f) || tries > 5000)
+  while (FVector::PointsAreNear(_ghostPosition, _playerStartPosition, 5000.f) && tries < 5000)
   {
     _ghostPosition = map.retrieve_safe_point();
     ++tries;
